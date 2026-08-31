@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="A searchable static browser for ICRA 2024–2026 and IROS 2024–2025 conference programs.">
+    <meta name="description" content="A searchable static browser for ICRA and IROS 2024–2026, with submission and acceptance trends from 2010 onward.">
     <meta name="theme-color" content="#081a33">
     <title>Robotics Program Atlas · ICRA &amp; IROS</title>
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
@@ -25,8 +25,8 @@
       </nav>
 
       <div class="hero-content">
-        <p class="eyebrow">ICRA 2024–2026 · IROS 2024–2025</p>
-        <h1>Five programs.<br><span>One clear view.</span></h1>
+        <p class="eyebrow">ICRA 2024–2026 · IROS 2024–2026</p>
+        <h1>Six editions.<br><span>One clear view.</span></h1>
         <p class="hero-copy">
           Search papers, follow technical sessions, and assemble a personal program—without leaving a fast, static page.
         </p>
@@ -48,6 +48,27 @@
         </div>
         <div id="conference-tabs" class="conference-tabs" role="tablist" aria-label="Conference edition"></div>
       </section>
+
+      <section class="trends-panel" aria-labelledby="trends-heading">
+        <div class="trends-heading">
+          <div>
+            <p class="section-kicker">The long view</p>
+            <h2 id="trends-heading">Submission &amp; acceptance, 2010–2026</h2>
+            <p>Annual reported paper counts for ICRA and IROS, drawn on the same scale.</p>
+          </div>
+          <span class="trend-range">17 years</span>
+        </div>
+        <div id="trend-charts" class="trend-grid" aria-live="polite"></div>
+        <div class="trend-footer">
+          <p id="trend-note"></p>
+          <details class="trend-sources">
+            <summary>Sources &amp; definitions</summary>
+            <div id="trend-source-list"></div>
+          </details>
+        </div>
+      </section>
+
+      <div id="trend-tooltip" class="trend-tooltip" role="tooltip" hidden></div>
 
       <section id="conference-overview" class="overview" aria-live="polite">
         <div class="overview-heading">

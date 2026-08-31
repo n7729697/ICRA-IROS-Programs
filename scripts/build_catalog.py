@@ -131,6 +131,23 @@ CONFERENCES: list[dict[str, Any]] = [
         ],
         "source_note": "Program parsed from the live PaperCept pages.",
     },
+    {
+        "key": "iros-2026",
+        "code": "IROS26",
+        "series": "IROS",
+        "year": 2026,
+        "title": "2026 IEEE/RSJ International Conference on Intelligent Robots and Systems",
+        "dates": "September 27–October 1, 2026",
+        "location": "Pittsburgh, PA, USA",
+        "root_url": "https://2026.ieee-iros.org/",
+        "days": [],
+        "program_status": "not-published",
+        "source_note": (
+            "IROS 2026 has announced its accepted-paper results, but its public PaperCept "
+            "session program has not been published as of August 31, 2026. This edition is "
+            "already represented in the atlas and can be rebuilt as soon as the program goes live."
+        ),
+    },
 ]
 
 KNOWN_TITLE_CORRECTIONS = {
@@ -141,6 +158,158 @@ KNOWN_TITLE_CORRECTIONS = {
     ("icra-2024", "thbl-ex_27"): (
         "Exploring Human’s Gender Perception and Bias Toward Non-Humanoid Robots"
     ),
+}
+
+
+# Reported conference-paper statistics. Definitions changed over time (notably
+# whether journal transfers were included), so the UI presents the figures as
+# reported and links the source notes rather than implying a perfectly uniform
+# denominator. Older ICRA estimates are explicitly marked as approximate.
+STATISTICS: dict[str, Any] = {
+    "schema_version": 1,
+    "range": [2010, 2026],
+    "scope_note": (
+        "Reported conference-paper submissions and acceptances. Track definitions vary by year; "
+        "some years include journal-option papers or presentations. Approximate values are marked ≈."
+    ),
+    "series": [
+        {
+            "name": "ICRA",
+            "color": "#1769d2",
+            "source_url": "https://csconfstats.xoveexu.com/conferences/icra/",
+            "points": [
+                {"year": 2010, "submitted": 2020, "accepted": 853, "approximate": True, "sources": ["icra-history"]},
+                {"year": 2011, "submitted": 1980, "accepted": 1025, "approximate": True, "sources": ["icra-history"]},
+                {"year": 2012, "submitted": 2067, "accepted": 836, "sources": ["icra-2012"]},
+                {"year": 2013, "submitted": 2270, "accepted": 870, "approximate": True, "sources": ["icra-history"]},
+                {"year": 2014, "submitted": 2090, "accepted": 1015, "approximate": True, "sources": ["icra-history"]},
+                {"year": 2015, "submitted": 2280, "accepted": 940, "approximate": True, "sources": ["icra-history", "icra-2015"]},
+                {"year": 2016, "submitted": 2358, "accepted": 816, "sources": ["icra-history"]},
+                {"year": 2017, "submitted": 2289, "accepted": 939, "sources": ["icra-history"]},
+                {"year": 2018, "submitted": 2586, "accepted": 1056, "sources": ["icra-history"]},
+                {"year": 2019, "submitted": 2916, "accepted": 1317, "sources": ["icra-history"]},
+                {"year": 2020, "submitted": 2902, "accepted": 1277, "sources": ["icra-history"]},
+                {"year": 2021, "submitted": 3877, "accepted": 1690, "sources": ["icra-history"]},
+                {"year": 2022, "submitted": 3263, "accepted": 1428, "sources": ["icra-history"]},
+                {"year": 2023, "submitted": 3125, "accepted": 1345, "sources": ["icra-history"]},
+                {"year": 2024, "submitted": 3937, "accepted": 1760, "sources": ["icra-2024"]},
+                {"year": 2025, "submitted": 4153, "accepted": 1606, "sources": ["icra-2025"]},
+                {
+                    "year": 2026,
+                    "submitted": 5088,
+                    "accepted": 1800,
+                    "accepted_approximate": True,
+                    "sources": ["icra-2026-submissions", "icra-2026-acceptance"],
+                },
+            ],
+        },
+        {
+            "name": "IROS",
+            "color": "#087f7b",
+            "source_url": "https://csconfstats.xoveexu.com/conferences/iros/",
+            "points": [
+                {"year": 2010, "submitted": 1798, "accepted": 828, "sources": ["iros-history"]},
+                {"year": 2011, "submitted": 2459, "accepted": 790, "sources": ["iros-2011"]},
+                {"year": 2012, "submitted": 1825, "accepted": 806, "sources": ["iros-history"]},
+                {"year": 2013, "submitted": 2094, "accepted": 904, "sources": ["iros-history"]},
+                {"year": 2014, "submitted": 1600, "accepted": 750, "approximate": True, "sources": ["iros-history"]},
+                {"year": 2015, "submitted": 2134, "accepted": 969, "sources": ["iros-2015"]},
+                {"year": 2016, "submitted": 1719, "accepted": 830, "sources": ["iros-2018-wrap"]},
+                {"year": 2017, "submitted": 2164, "accepted": 970, "sources": ["iros-2017"]},
+                {"year": 2018, "submitted": 2700, "accepted": 1254, "sources": ["iros-history", "iros-2018-wrap"]},
+                {"year": 2019, "submitted": 2494, "accepted": 1108, "sources": ["iros-history"]},
+                {"year": 2020, "submitted": 2996, "accepted": 1420, "sources": ["iros-history"]},
+                {"year": 2021, "submitted": 2786, "accepted": 1301, "sources": ["iros-history"]},
+                {"year": 2022, "submitted": 3579, "accepted": 1716, "sources": ["iros-2022"]},
+                {"year": 2023, "submitted": 2760, "accepted": 1196, "sources": ["iros-history"]},
+                {"year": 2024, "submitted": 3344, "accepted": 1587, "sources": ["iros-2024"]},
+                {"year": 2025, "submitted": 4306, "accepted": 1991, "sources": ["iros-2025"]},
+                {"year": 2026, "submitted": 4348, "accepted": 1585, "sources": ["iros-2026"]},
+            ],
+        },
+    ],
+    "sources": [
+        {
+            "id": "icra-history",
+            "label": "ICRA acceptance-rate history (compiled with per-year evidence)",
+            "url": "https://csconfstats.xoveexu.com/conferences/icra/",
+        },
+        {
+            "id": "icra-2012",
+            "label": "ICRA 2012 official conference page",
+            "url": "https://ewh.ieee.org/soc/ras/conf/fullysponsored/icra/2012/",
+        },
+        {
+            "id": "icra-2015",
+            "label": "ICRA 2015 official archived homepage",
+            "url": "https://ewh.ieee.org/soc/ras/conf/fullysponsored/icra/ICRA2015updated/web.archive.org/web/20200522131042/http_/icra2015.org/index.html",
+        },
+        {
+            "id": "icra-2024",
+            "label": "IEEE RAS AdCom minutes — ICRA 2024 statistics",
+            "url": "https://www.ieee-ras.org/images/AdCom_Meeting_Minutes/2024/APPROVED_AdCom_Meeting_Minutes__ICRA_2024_05172024pdf_1.pdf",
+        },
+        {
+            "id": "icra-2025",
+            "label": "IEEE Robotics & Automation Magazine — ICRA 2025 report",
+            "url": "https://doi.org/10.1109/MRA.2025.3588644",
+        },
+        {
+            "id": "icra-2026-submissions",
+            "label": "ICRA 2026 official announcement — 5,088 submissions",
+            "url": "https://2026.ieee-icra.org/announcement_categories/contribute/",
+        },
+        {
+            "id": "icra-2026-acceptance",
+            "label": "ICRA official conference post — approximately 1,800 accepted",
+            "url": "https://www.linkedin.com/posts/ieee-icra_icra2026-ieee-ras-activity-7425260175734902784-Ho2H",
+        },
+        {
+            "id": "iros-history",
+            "label": "IROS acceptance-rate history (compiled with per-year evidence)",
+            "url": "https://csconfstats.xoveexu.com/conferences/iros/",
+        },
+        {
+            "id": "iros-2011",
+            "label": "IROS 2011 official homepage",
+            "url": "https://ewh.ieee.org/soc/ras/conf/financiallycosponsored/IROS/2011/IROS/index.html",
+        },
+        {
+            "id": "iros-2015",
+            "label": "IROS 2015 official conference digest",
+            "url": "https://www.iros2015.org/docs/IROS_Digest_WWW.pdf",
+        },
+        {
+            "id": "iros-2017",
+            "label": "IROS 2017 official conference digest",
+            "url": "https://ewh.ieee.org/conf/iros/2017/iros2017.org/images/IROS_2017_Digest_LowRes.pdf",
+        },
+        {
+            "id": "iros-2018-wrap",
+            "label": "IROS 2018 official wrap-up statistics",
+            "url": "https://cbffc750-6217-497c-ba81-a78d7194278d.filesusr.com/ugd/09d8d3_eb1720ab2a234e7c93e30783c982372b.pdf",
+        },
+        {
+            "id": "iros-2022",
+            "label": "IROS 2022 official conference digest",
+            "url": "https://iros2022.org/cms/wp-content/uploads/2022/10/IROS2022_ConferenceDigest_Web.pdf",
+        },
+        {
+            "id": "iros-2024",
+            "label": "IROS 2024 decision statistics (archived evidence)",
+            "url": "https://staff.aist.go.jp/k.koide/evidence.html?id=iros2024",
+        },
+        {
+            "id": "iros-2025",
+            "label": "IROS 2025 official conference digest",
+            "url": "https://www.iros25.org/templates/iros2025/doc/IROS2025-Digest.pdf",
+        },
+        {
+            "id": "iros-2026",
+            "label": "IROS 2026 decision figures reported by UIC Engineering",
+            "url": "https://bme.uic.edu/news-stories/internship-leads-to-a-published-paper-for-undergrad/",
+        },
+    ],
 }
 
 
@@ -679,6 +848,7 @@ def build_conference(config: dict[str, Any], refresh: bool = False) -> dict[str,
         field: config[field]
         for field in ["key", "code", "series", "year", "title", "dates", "location", "root_url", "source_note"]
     }
+    conference["program_status"] = config.get("program_status", "available")
     return {
         "schema_version": 1,
         "conference": conference,
@@ -737,6 +907,7 @@ def main() -> None:
         index = {
             "schema_version": 1,
             "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+            "statistics_url": "data/statistics.json",
             "conferences": [
                 {
                     **catalog["conference"],
@@ -747,7 +918,9 @@ def main() -> None:
             ],
         }
         write_json(DATA_DIR / "index.json", index)
+        write_json(DATA_DIR / "statistics.json", STATISTICS)
         print("Wrote data/index.json", flush=True)
+        print("Wrote data/statistics.json", flush=True)
 
 
 if __name__ == "__main__":

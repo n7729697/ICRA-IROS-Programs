@@ -9,7 +9,14 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
-EXPECTED = {"icra-2024", "icra-2025", "icra-2026", "iros-2024", "iros-2025"}
+EXPECTED = {
+    "icra-2024",
+    "icra-2025",
+    "icra-2026",
+    "iros-2024",
+    "iros-2025",
+    "iros-2026",
+}
 
 
 def require(condition: bool, message: str) -> None:
@@ -37,7 +44,11 @@ def main() -> None:
         paper_ids = [paper["id"] for paper in papers]
         require(len(session_ids) == len(set(session_ids)), f"{key}: duplicate session id")
         require(len(paper_ids) == len(set(paper_ids)), f"{key}: duplicate paper id")
-        require(sessions and papers, f"{key}: empty program")
+        program_available = catalog["conference"].get("program_status", "available") == "available"
+        if program_available:
+            require(sessions and papers, f"{key}: empty published program")
+        else:
+            require(not sessions and not papers, f"{key}: unpublished program contains entries")
 
         paper_id_set = set(paper_ids)
         for session in sessions:
@@ -61,6 +72,19 @@ def main() -> None:
             f"{sum(p.get('is_placeholder', False) for p in papers):4} placeholders"
         )
 
+    statistics = json.loads((DATA / "statistics.json").read_text(encoding="utf-8"))
+    require(statistics["range"] == [2010, 2026], "statistics: incorrect year range")
+    source_ids = {source["id"] for source in statistics["sources"]}
+    require(len(source_ids) == len(statistics["sources"]), "statistics: duplicate source id")
+    require({series["name"] for series in statistics["series"]} == {"ICRA", "IROS"}, "statistics: missing series")
+    expected_years = list(range(2010, 2027))
+    for series in statistics["series"]:
+        points = series["points"]
+        require([point["year"] for point in points] == expected_years, f"{series['name']}: missing year")
+        for point in points:
+            require(point["submitted"] >= point["accepted"] > 0, f"{series['name']} {point['year']}: invalid counts")
+            require(set(point["sources"]) <= source_ids, f"{series['name']} {point['year']}: missing source")
+
     for asset in [ROOT / "index.html", ROOT / "assets/app.js", ROOT / "assets/styles.css"]:
         require(asset.exists() and asset.stat().st_size > 0, f"missing site asset: {asset}")
     print(f"Validated {len(EXPECTED)} editions and {total_papers:,} paper records.")
@@ -68,4 +92,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

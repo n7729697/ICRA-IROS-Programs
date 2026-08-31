@@ -1,9 +1,9 @@
 # ICRA & IROS Program Atlas
 
-A fast, searchable static browser for five robotics conference programs:
+A fast, searchable static browser for six robotics conference editions:
 
 - ICRA 2024, 2025, and 2026
-- IROS 2024 and 2025
+- IROS 2024, 2025, and 2026 (program pending)
 
 The site follows the useful information architecture of a PaperCept program—conference/day navigation, sessions, papers, authors, keywords, and a saved program—while using an original responsive interface. It has no server or database and is designed for GitHub Pages.
 
@@ -11,7 +11,8 @@ The site follows the useful information architecture of a PaperCept program—co
 
 ## Features
 
-- Switch between all five conference editions
+- Switch between all six conference editions
+- Compare reported ICRA and IROS submissions and acceptances from 2010 through 2026
 - Browse by day and technical session
 - Search titles, authors, affiliations, keywords, and session names
 - View either session groups or a compact paper grid
@@ -30,10 +31,13 @@ Abstracts are deliberately excluded. This keeps the repository small and limits 
 | ICRA 2026 | Live PaperCept pages | Complete listed program, Sunday–Friday |
 | IROS 2024 | Archived PaperCept pages, author/keyword indexes, Crossref | Wednesday–Thursday pages are direct; missing pages are conservatively reconstructed and visibly labeled |
 | IROS 2025 | Live PaperCept pages | Complete listed program, Tuesday–Thursday |
+| IROS 2026 | Official conference site | Accepted-paper statistics are shown; the session program remains empty until PaperCept publishes it |
 
 The archived IROS 2024 capture does not contain its Monday, Tuesday, or Friday content pages. The builder therefore uses the archived author and keyword indexes to recover paper codes and days, then associates a title only when the listed authors identify one Crossref proceedings record. It never invents a time, room, or session title. Unresolved entries remain visible as placeholders, and unmatched proceedings papers remain searchable in a separate “Proceedings index” day.
 
 Source URLs are recorded in every generated catalog. This project is independent and is not affiliated with IEEE, RAS, RSJ, or PaperCept.
+
+The trend panel covers every year from 2010–2026. Reported track definitions vary across years, so approximate values carry an `≈` marker and the panel exposes the underlying source links. The reproducible series and citations live in `data/statistics.json`.
 
 ## Run locally
 
@@ -59,7 +63,7 @@ Downloads are cached under `.cache/`. Pass `--refresh` to retrieve every source 
 
 ```text
 assets/                  Browser application and styles
-data/                    Generated, edition-specific JSON catalogs
+data/                    Generated edition catalogs and historical statistics
 scripts/build_catalog.py Reproducible downloader and parser
 scripts/validate_catalog.py Catalog integrity checks
 index.html               Static application shell
@@ -68,4 +72,3 @@ index.html               Static application shell
 ## License
 
 The site code and data-building scripts are released under the [MIT License](LICENSE). Conference names, program metadata, and linked source material remain subject to their respective owners’ terms.
-

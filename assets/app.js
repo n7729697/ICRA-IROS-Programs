@@ -6,6 +6,7 @@
   const cache = new Map();
   const state = {
     index: null,
+    statistics: null,
     catalog: null,
     conferenceKey: "",
     query: "",
@@ -17,6 +18,10 @@
 
   const elements = {
     tabs: document.querySelector("#conference-tabs"),
+    trendCharts: document.querySelector("#trend-charts"),
+    trendNote: document.querySelector("#trend-note"),
+    trendSourceList: document.querySelector("#trend-source-list"),
+    trendTooltip: document.querySelector("#trend-tooltip"),
     freshness: document.querySelector("#data-freshness"),
     seriesBadge: document.querySelector("#series-badge"),
     sourceBadge: document.querySelector("#source-badge"),
@@ -99,11 +104,13 @@
     updateSavedCount();
     try {
       state.index = await fetchJSON("data/index.json");
+      state.statistics = await fetchJSON(state.index.statistics_url || "data/statistics.json");
       const generated = new Date(state.index.generated_at);
       elements.freshness.textContent = Number.isNaN(generated.getTime())
         ? "Static catalog"
         : `Catalog built ${generated.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}`;
       renderConferenceTabs();
+      renderTrends();
       await selectConference(conferenceFromURL(state.index));
     } catch (error) {
       showError(error);
@@ -172,6 +179,24 @@
       }
     });
 
+    elements.trendCharts.addEventListener("pointerover", (event) => {
+      const hit = event.target.closest(".trend-hit");
+      if (hit) showTrendTooltip(hit, event.clientX, event.clientY);
+    });
+    elements.trendCharts.addEventListener("pointermove", (event) => {
+      const hit = event.target.closest(".trend-hit");
+      if (hit) positionTrendTooltip(event.clientX, event.clientY);
+      else hideTrendTooltip();
+    });
+    elements.trendCharts.addEventListener("pointerleave", hideTrendTooltip);
+    elements.trendCharts.addEventListener("focusin", (event) => {
+      const hit = event.target.closest(".trend-hit");
+      if (!hit) return;
+      const bounds = hit.getBoundingClientRect();
+      showTrendTooltip(hit, bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
+    });
+    elements.trendCharts.addEventListener("focusout", hideTrendTooltip);
+
     document.addEventListener("keydown", (event) => {
       const activeTag = document.activeElement && document.activeElement.tagName;
       const editable = /^(INPUT|TEXTAREA|SELECT)$/.test(activeTag || "");
@@ -189,7 +214,12 @@
   }
 
   function renderConferenceTabs() {
-    elements.tabs.innerHTML = state.index.conferences.map((conference) => `
+    elements.tabs.innerHTML = state.index.conferences.map((conference) => {
+      const pending = conference.program_status === "not-published";
+      const countLabel = pending
+        ? '<span class="pending-label">Program pending</span>'
+        : `<span>${formatNumber(conference.counts.papers)} papers</span>`;
+      return `
       <button
         class="conference-tab"
         type="button"
@@ -197,9 +227,10 @@
         data-conference="${escapeHTML(conference.key)}"
         aria-selected="false"
       >
-        <span><strong>${escapeHTML(conference.series)} ${conference.year}</strong><span>${formatNumber(conference.counts.papers)} papers</span></span>
+        <span><strong>${escapeHTML(conference.series)} ${conference.year}</strong>${countLabel}</span>
       </button>
-    `).join("");
+    `;
+    }).join("");
 
     elements.tabs.addEventListener("click", (event) => {
       const button = event.target.closest("button[data-conference]");
@@ -264,27 +295,165 @@
     }
   }
 
+  function pointIsApproximate(point, field) {
+    return Boolean(point.approximate || point[`${field}_approximate`]);
+  }
+
+  function reportedValue(point, field) {
+    return `${pointIsApproximate(point, field) ? "≈" : ""}${formatNumber(point[field])}`;
+  }
+
+  function statisticsPoint(seriesName, year) {
+    if (!state.statistics) return null;
+    const series = state.statistics.series.find((item) => item.name === seriesName);
+    return series ? series.points.find((point) => point.year === year) : null;
+  }
+
+  function svgPath(points, xScale, yScale) {
+    return points.map((point, index) => {
+      const command = index ? "L" : "M";
+      return `${command}${xScale(point.year).toFixed(2)},${yScale(point.value).toFixed(2)}`;
+    }).join(" ");
+  }
+
+  function renderTrendChart(series, maxY) {
+    const width = 620;
+    const height = 300;
+    const margin = { top: 20, right: 18, bottom: 36, left: 49 };
+    const plotWidth = width - margin.left - margin.right;
+    const plotHeight = height - margin.top - margin.bottom;
+    const firstYear = state.statistics.range[0];
+    const lastYear = state.statistics.range[1];
+    const xScale = (year) => margin.left + ((year - firstYear) / (lastYear - firstYear)) * plotWidth;
+    const yScale = (value) => margin.top + plotHeight - (value / maxY) * plotHeight;
+    const baseline = yScale(0);
+    const submitted = series.points.map((point) => ({ year: point.year, value: point.submitted }));
+    const accepted = series.points.map((point) => ({ year: point.year, value: point.accepted }));
+    const submittedPath = svgPath(submitted, xScale, yScale);
+    const acceptedPath = svgPath(accepted, xScale, yScale);
+    const areaPath = `${submittedPath} L${xScale(lastYear).toFixed(2)},${baseline.toFixed(2)} L${xScale(firstYear).toFixed(2)},${baseline.toFixed(2)} Z`;
+    const yTicks = [];
+    for (let value = 0; value <= maxY; value += 1000) yTicks.push(value);
+    const xTicks = series.points.filter((point) => (point.year - firstYear) % 2 === 0);
+    const latest = series.points[series.points.length - 1];
+
+    return `
+      <figure class="trend-card" style="--series-color: ${escapeHTML(series.color)}">
+        <figcaption class="trend-card-header">
+          <h3 class="trend-series-title"><span class="trend-series-dot" aria-hidden="true"></span>${escapeHTML(series.name)}</h3>
+          <span class="trend-latest"><strong>${latest.year}</strong>${reportedValue(latest, "accepted")} accepted / ${reportedValue(latest, "submitted")} submitted</span>
+        </figcaption>
+        <div class="trend-legend" aria-hidden="true">
+          <span><i class="legend-shade"></i>Submissions</span>
+          <span><i class="legend-solid"></i>Accepted</span>
+        </div>
+        <div class="trend-chart-scroll">
+          <svg class="trend-chart" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="${series.name.toLowerCase()}-trend-title ${series.name.toLowerCase()}-trend-desc">
+            <title id="${series.name.toLowerCase()}-trend-title">${escapeHTML(series.name)} submissions and accepted papers, 2010 to 2026</title>
+            <desc id="${series.name.toLowerCase()}-trend-desc">A shaded submissions series and solid accepted-paper series. Focus any year for exact reported values.</desc>
+            ${yTicks.map((value) => `
+              <line class="trend-gridline" x1="${margin.left}" y1="${yScale(value)}" x2="${width - margin.right}" y2="${yScale(value)}"></line>
+              <text class="trend-axis-label" x="${margin.left - 8}" y="${yScale(value) + 3}" text-anchor="end">${value ? `${value / 1000}k` : "0"}</text>
+            `).join("")}
+            ${xTicks.map((point) => `<text class="trend-axis-label" x="${xScale(point.year)}" y="${height - 12}" text-anchor="middle">${point.year}</text>`).join("")}
+            <path class="trend-area" d="${areaPath}" fill="${escapeHTML(series.color)}"></path>
+            <path class="trend-submission-line" d="${submittedPath}" stroke="${escapeHTML(series.color)}"></path>
+            <path class="trend-accepted-line" d="${acceptedPath}" stroke="${escapeHTML(series.color)}"></path>
+            ${series.points.map((point) => {
+              const x = xScale(point.year);
+              const submittedY = yScale(point.submitted);
+              const acceptedY = yScale(point.accepted);
+              const description = `${series.name} ${point.year}: ${reportedValue(point, "submitted")} submitted, ${reportedValue(point, "accepted")} accepted`;
+              return `
+                <g class="trend-hit" tabindex="0" role="img" aria-label="${escapeHTML(description)}" data-series="${escapeHTML(series.name)}" data-year="${point.year}">
+                  <title>${escapeHTML(description)}</title>
+                  <rect x="${x - 12}" y="${margin.top}" width="24" height="${plotHeight}" fill="transparent"></rect>
+                  <circle class="trend-submitted-dot" cx="${x}" cy="${submittedY}" r="3.5" fill="#fff" stroke="${escapeHTML(series.color)}"></circle>
+                  <circle class="trend-accepted-dot" cx="${x}" cy="${acceptedY}" r="3.4" fill="${escapeHTML(series.color)}"></circle>
+                  <circle class="trend-focus-ring" cx="${x}" cy="${acceptedY}" r="7"></circle>
+                </g>
+              `;
+            }).join("")}
+          </svg>
+        </div>
+      </figure>
+    `;
+  }
+
+  function renderTrends() {
+    const maxReported = Math.max(...state.statistics.series.flatMap((series) => series.points.map((point) => point.submitted)));
+    const maxY = Math.ceil(maxReported / 1000) * 1000;
+    elements.trendCharts.innerHTML = state.statistics.series
+      .map((series) => renderTrendChart(series, maxY))
+      .join("");
+    elements.trendNote.textContent = `${state.statistics.scope_note} Hover or focus a year to inspect its values.`;
+    elements.trendSourceList.innerHTML = state.statistics.sources.map((source) => `
+      <a href="${escapeHTML(source.url)}" target="_blank" rel="noreferrer">${escapeHTML(source.label)} ↗</a>
+    `).join("");
+  }
+
+  function showTrendTooltip(hit, clientX, clientY) {
+    const point = statisticsPoint(hit.dataset.series, Number(hit.dataset.year));
+    if (!point) return;
+    const rate = (point.accepted / point.submitted) * 100;
+    const approximate = pointIsApproximate(point, "submitted") || pointIsApproximate(point, "accepted");
+    elements.trendTooltip.innerHTML = `
+      <strong>${escapeHTML(hit.dataset.series)} ${point.year}</strong>
+      <span>Submitted: ${reportedValue(point, "submitted")}</span>
+      <span>Accepted: ${reportedValue(point, "accepted")}</span>
+      <span>Acceptance: ${rate.toFixed(1)}%</span>
+      ${approximate ? "<em>≈ approximate reported value</em>" : ""}
+    `;
+    elements.trendTooltip.hidden = false;
+    positionTrendTooltip(clientX, clientY);
+  }
+
+  function positionTrendTooltip(clientX, clientY) {
+    if (elements.trendTooltip.hidden) return;
+    const gap = 14;
+    const bounds = elements.trendTooltip.getBoundingClientRect();
+    const left = Math.min(window.innerWidth - bounds.width - 8, Math.max(8, clientX + gap));
+    const top = clientY + bounds.height + gap < window.innerHeight
+      ? clientY + gap
+      : clientY - bounds.height - gap;
+    elements.trendTooltip.style.left = `${left}px`;
+    elements.trendTooltip.style.top = `${Math.max(8, top)}px`;
+  }
+
+  function hideTrendTooltip() {
+    elements.trendTooltip.hidden = true;
+  }
+
   function renderOverview() {
     const { conference, counts } = state.catalog;
+    const pending = conference.program_status === "not-published";
     elements.seriesBadge.textContent = `${conference.series} ${conference.year}`;
     const archivedSource = conference.root_url.includes("web.archive.org");
-    elements.sourceBadge.textContent = archivedSource ? "Archived source" : "Live source";
+    elements.sourceBadge.textContent = pending ? "Program pending" : (archivedSource ? "Archived source" : "Live source");
     elements.title.textContent = conference.title;
     elements.meta.textContent = `${conference.dates} · ${conference.location}`;
     elements.source.href = conference.root_url;
+    elements.source.innerHTML = `${pending ? "Conference site" : "Source program"} <span aria-hidden="true">↗</span>`;
     elements.sourceNote.textContent = conference.source_note;
-    const stats = [
-      [counts.papers, "Paper records"],
-      [counts.sessions, "Sessions"],
-      [counts.authors, "Authors"],
-      [counts.keywords, "Keywords"],
+    const reported = statisticsPoint(conference.series, conference.year);
+    const stats = pending && reported ? [
+      [reportedValue(reported, "submitted"), "Submissions"],
+      [reportedValue(reported, "accepted"), "Accepted papers"],
+      [`${((reported.accepted / reported.submitted) * 100).toFixed(1)}%`, "Acceptance rate"],
+      ["Pending", "Session program"],
+    ] : [
+      [formatNumber(counts.papers), "Paper records"],
+      [formatNumber(counts.sessions), "Sessions"],
+      [formatNumber(counts.authors), "Authors"],
+      [formatNumber(counts.keywords), "Keywords"],
     ];
     elements.stats.innerHTML = stats.map(([value, label]) => `
-      <div class="stat"><strong>${formatNumber(value)}</strong><span>${label}</span></div>
+      <div class="stat"><strong>${escapeHTML(value)}</strong><span>${escapeHTML(label)}</span></div>
     `).join("");
   }
 
   function renderDayOptions() {
+    const pending = state.catalog.conference.program_status === "not-published";
     const hasProceedings = state.catalog.papers.some((paper) => paper.day_index === null);
     elements.day.innerHTML = [
       '<option value="all">All days</option>',
@@ -292,6 +461,10 @@
       ...(hasProceedings ? ['<option value="proceedings">Proceedings index</option>'] : []),
     ].join("");
     elements.day.value = state.day;
+    elements.search.disabled = pending;
+    elements.day.disabled = pending;
+    elements.clear.disabled = pending;
+    for (const button of elements.views.querySelectorAll("button")) button.disabled = pending;
   }
 
   function showLoading() {
@@ -356,9 +529,28 @@
 
   function renderResults() {
     if (!state.catalog) return;
+    if (state.catalog.conference.program_status === "not-published") {
+      renderProgramPending();
+      return;
+    }
     elements.clear.hidden = !state.query && state.day === "all";
     if (state.view === "sessions") renderSessions();
     else renderPaperGrid();
+  }
+
+  function renderProgramPending() {
+    const conference = state.catalog.conference;
+    elements.clear.hidden = true;
+    elements.loadMore.hidden = true;
+    elements.summary.textContent = "Session program not published yet";
+    elements.results.innerHTML = `
+      <section class="program-pending">
+        <span class="program-pending-icon" aria-hidden="true">⌁</span>
+        <h3>IROS 2026 is already in the atlas</h3>
+        <p>Paper decisions have been announced, but the public session-by-session program is not available yet. The catalog is intentionally empty rather than filled with guessed metadata.</p>
+        <a class="source-button" href="${escapeHTML(conference.root_url)}" target="_blank" rel="noreferrer">Visit conference site <span aria-hidden="true">↗</span></a>
+      </section>
+    `;
   }
 
   function renderSessions() {
