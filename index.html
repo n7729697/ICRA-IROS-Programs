@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A searchable static browser for ICRA 2024–2026 and IROS 2024–2025 conference programs.">
+    <meta name="theme-color" content="#081a33">
+    <title>Robotics Program Atlas · ICRA &amp; IROS</title>
+    <link rel="stylesheet" href="assets/styles.css">
+    <script src="assets/app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#program">Skip to program</a>
+
+    <header class="hero">
+      <nav class="topbar" aria-label="Primary navigation">
+        <a class="brand" href="./" aria-label="Robotics Program Atlas home">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span>Robotics Program Atlas</span>
+        </a>
+        <a class="github-link" href="https://github.com/n7729697/ICRA-IROS-Programs" target="_blank" rel="noreferrer">
+          View repository <span aria-hidden="true">↗</span>
+        </a>
+      </nav>
+
+      <div class="hero-content">
+        <p class="eyebrow">ICRA 2024–2026 · IROS 2024–2025</p>
+        <h1>Five programs.<br><span>One clear view.</span></h1>
+        <p class="hero-copy">
+          Search papers, follow technical sessions, and assemble a personal program—without leaving a fast, static page.
+        </p>
+      </div>
+
+      <div class="hero-orbit orbit-one" aria-hidden="true"></div>
+      <div class="hero-orbit orbit-two" aria-hidden="true"></div>
+      <div class="hero-grid" aria-hidden="true"></div>
+    </header>
+
+    <main id="program" class="shell">
+      <section class="conference-panel" aria-labelledby="conference-heading">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Choose an edition</p>
+            <h2 id="conference-heading">Conference programs</h2>
+          </div>
+          <span id="data-freshness" class="data-freshness"></span>
+        </div>
+        <div id="conference-tabs" class="conference-tabs" role="tablist" aria-label="Conference edition"></div>
+      </section>
+
+      <section id="conference-overview" class="overview" aria-live="polite">
+        <div class="overview-heading">
+          <div>
+            <div class="overview-labels">
+              <span id="series-badge" class="series-badge">Loading</span>
+              <span id="source-badge" class="source-badge"></span>
+            </div>
+            <h2 id="conference-title">Loading conference data…</h2>
+            <p id="conference-meta" class="conference-meta"></p>
+          </div>
+          <a id="official-program" class="source-button" href="#" target="_blank" rel="noreferrer">
+            Source program <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+        <div id="stats" class="stats" aria-label="Conference statistics"></div>
+      </section>
+
+      <section class="workspace" aria-labelledby="browse-heading">
+        <h2 id="browse-heading" class="visually-hidden">Browse program</h2>
+        <div class="controls">
+          <label class="search-box" for="search-input">
+            <span class="search-icon" aria-hidden="true"></span>
+            <input id="search-input" type="search" autocomplete="off" placeholder="Search titles, authors, keywords, sessions…">
+            <kbd>/</kbd>
+          </label>
+
+          <label class="select-wrap" for="day-select">
+            <span>Day</span>
+            <select id="day-select"><option value="all">All days</option></select>
+          </label>
+
+          <div id="view-switcher" class="view-switcher" role="group" aria-label="Program view">
+            <button type="button" data-view="sessions" aria-pressed="true">Sessions</button>
+            <button type="button" data-view="papers" aria-pressed="false">Papers</button>
+            <button type="button" data-view="saved" aria-pressed="false">
+              Saved <span id="saved-count" class="saved-count">0</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="result-bar">
+          <p id="result-summary" role="status">Loading program…</p>
+          <button id="clear-filters" class="text-button" type="button" hidden>Clear filters</button>
+        </div>
+
+        <div id="loading" class="loading-state" aria-live="polite">
+          <span class="spinner" aria-hidden="true"></span>
+          <p>Reading the program…</p>
+        </div>
+        <div id="error-state" class="error-state" hidden></div>
+        <div id="results" class="results" hidden></div>
+        <div class="load-more-wrap">
+          <button id="load-more" class="load-more" type="button" hidden>Show more</button>
+        </div>
+      </section>
+
+      <aside id="provenance" class="provenance" aria-labelledby="provenance-heading">
+        <span class="provenance-icon" aria-hidden="true">i</span>
+        <div>
+          <h2 id="provenance-heading">About this edition’s data</h2>
+          <p id="source-note"></p>
+        </div>
+      </aside>
+    </main>
+
+    <footer>
+      <p>Independent research utility · Not affiliated with IEEE, RAS, RSJ, or PaperCept.</p>
+      <p>Factual metadata links back to its source. Abstracts are intentionally not reproduced.</p>
+    </footer>
+
+    <template id="empty-template">
+      <section class="empty-state">
+        <div aria-hidden="true">⌁</div>
+        <h3>No matching papers</h3>
+        <p>Try a shorter phrase, another day, or clear the current filters.</p>
+      </section>
+    </template>
+  </body>
+</html>
+
